@@ -46,7 +46,6 @@ pipeline{
                     dir('Infrastructure'){
                         dir('ansible') {
                             services = Return_Json_From_File("$path_dev_json_file").release.services.keySet()
-                            println(services)
                             servers = Return_Json_From_File("$path_dev_json_file")["release"]["services"]["$params.triggered_by"]["servers"]
                             for (server in servers){
                                 sh "cp $hosts_file_name ${hosts_file_name}.bak"
@@ -64,9 +63,15 @@ pipeline{
                                         stable_version = Return_Json_From_File("$path_prod_json_file")["release"]["services"]["$service"]["version"]
                                         image_name = docker_prod_repo + colons + service + underscore + stable_version
                                         sh "sed -i 's/\\$service$template_ip\\>/$server/' $hosts_file_name"
-                                        sh """
+                                       try{
+                                           sh """
                                             ansible-playbook -vvvvv -i hosts  -e "service=$service image_name=$image_name"  $playbook_file
                                         """
+                                       }
+                                       catch (exception){
+                                           println("Deploy services is failed")
+                                       }
+
                                    }
                                     sh "mv ${hosts_file_name}.bak $hosts_file_name "
                                 }
@@ -80,6 +85,13 @@ pipeline{
                 }
             }
         }
+//        stage('QA tests'){
+//            steps{
+//                script{
+//
+//                }
+//            }
+//        }
         }
     }
 def Return_Json_From_File(file_name){
