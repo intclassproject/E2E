@@ -37,6 +37,12 @@ pipeline{
                         checkout([$class: 'GitSCM', branches: [[name: 'Dev']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'git-cred-id', url: "https://github.com/intclassproject/Infrastructure.git"]]])
 
                             }
+                    dir('Automation'){
+                        deleteDir()
+                        checkout([$class: 'GitSCM', branches: [[name: 'master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'git-cred-id', url: "https://github.com/intclassproject/Automation.git"]]])
+
+
+                    }
                     }
                 }
             }
@@ -85,13 +91,15 @@ pipeline{
                 }
             }
         }
-//        stage('QA tests'){
-//            steps{
-//                script{
-//
-//                }
-//            }
-//        }
+        stage('QA tests'){
+            steps{
+                script{
+                    dir('Automation'){
+                        sh "pwd"
+                    }
+                }
+            }
+        }
         }
     }
 def Return_Json_From_File(file_name){
